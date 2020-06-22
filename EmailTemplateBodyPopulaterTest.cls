@@ -127,8 +127,7 @@ public with sharing class EmailTemplateBodyPopulaterTest {
 
 	private static String populateEmailBodyInTestContext(String templateBody, SObject record) {
 		Test.startTest();
-			EmailTemplateBodyPopulater templateFiller = new EmailTemplateBodyPopulater(templateBody, record);
-			String resultingBody = templateFiller.getBody();
+			String resultingBody = EmailTemplateBodyPopulater.fillTemplateMergeFields(templateBody, record);
 		Test.stopTest();
 		return resultingBody;
 	}

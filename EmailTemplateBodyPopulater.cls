@@ -1,16 +1,6 @@
 public with sharing class EmailTemplateBodyPopulater {
-	
-	private String body;
 
-	public EmailTemplateBodyPopulater(String templateBody, SObject record) {
-		this.body = fillTemplateMergeFields(templateBody, record);
-	}
-
-	public String getBody() {
-		return body;
-	}
-
-	private String fillTemplateMergeFields(String templateBody, SObject record) {
+	public static String fillTemplateMergeFields(String templateBody, SObject record) {
 		String recordString = JSON.serialize(record);
 		Map<String, Object> formattedRecord = (Map<String, Object>)JSON.deserializeUntyped(recordString);
 		Map<String, Object> deepRecord = constructDeepObjectMap(formattedRecord);
@@ -30,14 +20,14 @@ public with sharing class EmailTemplateBodyPopulater {
 		return templateBody;
 	}
 
-	private void validateTemplateSObjectType(String objectAPIName, String objectAPINameInTemplate) {
+	private static void validateTemplateSObjectType(String objectAPIName, String objectAPINameInTemplate) {
 		if (objectAPIName != objectAPINameInTemplate) {
 			throw new InvalidSObjectTypeException('Invalid SObject type for email template. Expected: ' 
 				+ objectAPINameInTemplate + ', Received: ' + objectAPIName + '.');
 		}
 	}
 
-	private Map<String, Object> constructDeepObjectMap(Map<String, Object> recordRepresentation) {
+	private static Map<String, Object> constructDeepObjectMap(Map<String, Object> recordRepresentation) {
 		Map<String, Object> completedRepresentation = new Map<String, Object>();
 		for (String property : recordRepresentation.keySet()) {
 			if (recordRepresentation.get(property) instanceof Map<String, Object> && property != 'attributes') {
