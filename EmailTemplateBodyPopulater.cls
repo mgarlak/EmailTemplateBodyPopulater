@@ -11,7 +11,7 @@ public with sharing class EmailTemplateBodyPopulater {
 	}
 
 	private String fillTemplateMergeFields(String templateBody, SObject record) {
-		String recordString = JSON.serializePretty(record);
+		String recordString = JSON.serialize(record);
 		Map<String, Object> formattedRecord = (Map<String, Object>)JSON.deserializeUntyped(recordString);
 		Map<String, Object> deepRecord = constructDeepObjectMap(formattedRecord);
 		Pattern p = Pattern.compile('\\{\\s*!\\s*(\\w+)\\.([A-Za-z0-9._]+)\\s*\\}');
