@@ -125,6 +125,18 @@ public with sharing class EmailTemplateBodyPopulaterTest {
 		System.assertEquals('You are not prepared! - Illidan Stormrage', testResults);
 	}
 
+	@isTest
+	private static void emailTemplateBodyPopulater_GivenPlainTextTemplateWithDeeperMergeFieldAndRecordWithDeeperData_ShouldFillMergeFieldWithSObjectInfo() {
+		String templateBody = 'I am {!Contact.Name} created by {!Contact.CreatedBy.Name}, the {!Contact.CreatedBy.Profile.Name}.  I represent the {!Contact.Account.Name}.';
+		String fictionalCharacterJSON = '{"Name": "Jeff Zoblob","CreatedBy": {"Name": "Blob","Profile": {"Name": "Almighty Creator"}}, "Account": {"Name": "Lightning Blobs"}}';
+		Contact fictionalCharacter = (Contact)JSON.deserialize(fictionalCharacterJSON, Contact.class);
+		String testResults = populateEmailBodyInTestContext(templateBody, fictionalCharacter);
+		System.assertEquals(
+			'I am Jeff Zoblob created by Blob, the Almighty Creator.  I represent the Lightning Blobs.', 
+			testResults
+		);
+	}
+
 	private static String populateEmailBodyInTestContext(String templateBody, SObject record) {
 		Test.startTest();
 			String resultingBody = EmailTemplateBodyPopulater.fillTemplateMergeFields(templateBody, record);

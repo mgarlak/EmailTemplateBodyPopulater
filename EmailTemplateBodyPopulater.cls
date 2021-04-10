@@ -3,7 +3,7 @@ public with sharing class EmailTemplateBodyPopulater {
 	public static String fillTemplateMergeFields(String templateBody, SObject record) {
 		String recordString = JSON.serialize(record);
 		Map<String, Object> formattedRecord = (Map<String, Object>)JSON.deserializeUntyped(recordString);
-		Map<String, Object> deepRecord = constructDeepObjectMap(formattedRecord);
+		Map<String, Object> deepRecord = buildDeepRecord(formattedRecord);
 		Pattern p = Pattern.compile('\\{\\s*!\\s*(\\w+)\\.([A-Za-z0-9._]+)\\s*\\}');
 		Matcher m = p.matcher(templateBody);
 		while (m.find()) {
@@ -27,21 +27,47 @@ public with sharing class EmailTemplateBodyPopulater {
 		}
 	}
 
-	private static Map<String, Object> constructDeepObjectMap(Map<String, Object> recordRepresentation) {
+	private static Map<String, Object> buildDeepRecord(Map<String, Object> recordRepresentation) {
 		Map<String, Object> completedRepresentation = new Map<String, Object>();
-		for (String property : recordRepresentation.keySet()) {
-			if (recordRepresentation.get(property) instanceof Map<String, Object> && property != 'attributes') {
-				Map<String, Object> nestedRepresentation = new Map<String, Object>();
-				Map<String, Object> nestedObject = (Map<String, Object>)recordRepresentation.get(property);
-				for (String nestedProperty : nestedObject.keySet()) {
-					nestedRepresentation.put(property + '.' + nestedProperty, nestedObject.get(nestedProperty));
+
+		EmailTemplateBodyPopulaterStack stack = new EmailTemplateBodyPopulaterStack();
+		stack.push(recordRepresentation);
+		while(!stack.empty()) {
+			Map<String, Object> node = stack.pop();
+			for (String property : node.keySet()) {
+
+				if (node.get(property) instanceof Map<String, Object> && property != 'attributes') {
+					Map<String, Object> nestedRepresentation = new Map<String, Object>();
+					Map<String, Object> nestedObject = (Map<String, Object>) node.get(property);
+					for (String nestedProperty: nestedObject.keySet()) {
+						nestedRepresentation.put(property + '.' + nestedProperty, nestedObject.get(nestedProperty));
+					}
+					stack.push(nestedRepresentation);
+				} else if (property != 'attributes') {
+					completedRepresentation.put(property, node.get(property));
 				}
-				completedRepresentation.putAll(constructDeepObjectMap(nestedRepresentation));
-			} else {
-				completedRepresentation.put(property, recordRepresentation.get(property));
+				
 			}
 		}
+
 		return completedRepresentation;
+
+	}
+
+	private class EmailTemplateBodyPopulaterStack {
+		private List<Map<String, Object>> s = new List<Map<String, Object>>();
+
+		public Map<String, Object> pop() {
+			return s.remove(s.size()-1);
+		}
+
+		public void push(Map<String, Object> o) {
+			s.add(o);
+		}
+
+		public Boolean empty() {
+			return s.isEmpty();
+		}
 	}
 
 	public class InvalidSObjectTypeException extends Exception {}
