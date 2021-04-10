@@ -6,8 +6,8 @@ public with sharing class EmailTemplateBodyPopulater {
 		Map<String, Object> deepRecord = buildDeepRecord(formattedRecord);
 		Pattern p = Pattern.compile('\\{\\s*!\\s*(\\w+)\\.([A-Za-z0-9._]+)\\s*\\}');
 		Matcher m = p.matcher(templateBody);
+		String objectAPIName = record.getSObjectType().getDescribe().getName();
 		while (m.find()) {
-			String objectAPIName = record.getSObjectType().getDescribe().getName();
 			validateTemplateSObjectType(objectAPIName, m.group(1));
 			String fieldName = m.group(2);
 			String replacePattern = '\\{\\s*!\\s*' + objectAPIName + '\\.' + fieldName + '\\s*\\}';
