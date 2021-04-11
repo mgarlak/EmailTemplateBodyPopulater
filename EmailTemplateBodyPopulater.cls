@@ -35,23 +35,23 @@ public with sharing class EmailTemplateBodyPopulater {
 		while(!stack.empty()) {
 			Map<String, Object> node = stack.pop();
 			for (String property : node.keySet()) {
-
 				if (node.get(property) instanceof Map<String, Object> && property != 'attributes') {
-					Map<String, Object> nestedRepresentation = new Map<String, Object>();
-					Map<String, Object> nestedObject = (Map<String, Object>) node.get(property);
-					for (String nestedProperty: nestedObject.keySet()) {
-						nestedRepresentation.put(property + '.' + nestedProperty, nestedObject.get(nestedProperty));
-					}
-					stack.push(nestedRepresentation);
+					stack.push(buildRelationship(property, (Map<String, Object>) node.get(property)));
 				} else if (property != 'attributes') {
 					completedRepresentation.put(property, node.get(property));
 				}
-				
 			}
 		}
 
 		return completedRepresentation;
+	}
 
+	private static Map<String, Object> buildRelationship(String parent, Map<String, Object> relationship) {
+		Map<String, Object> nestedRepresentation = new Map<String, Object>();
+		for (String property : relationship.keySet()) {
+			nestedRepresentation.put(parent + '.' + property, relationship.get(property));
+		}
+		return nestedRepresentation;
 	}
 
 	private class EmailTemplateBodyPopulaterStack {
