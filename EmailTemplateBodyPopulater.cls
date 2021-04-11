@@ -35,9 +35,9 @@ public with sharing class EmailTemplateBodyPopulater {
 		while(!stack.empty()) {
 			Map<String, Object> node = stack.pop();
 			for (String property : node.keySet()) {
-				if (node.get(property) instanceof Map<String, Object> && property != 'attributes') {
+				if (node.get(property) instanceof Map<String, Object>) {
 					stack.push(buildRelationship(property, (Map<String, Object>) node.get(property)));
-				} else if (property != 'attributes') {
+				} else {
 					completedRepresentation.put(property, node.get(property));
 				}
 			}
